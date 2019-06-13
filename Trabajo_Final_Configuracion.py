@@ -83,11 +83,9 @@ def configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_pa
 	import PySimpleGUI as sg
 	dic= {'Negro':'black','Gris':'gray','Blanco':'white','Rojo':'red','Naranja':'orange','Dorado':'gold','Plateado':'silver','Amarillo':'yellow','Verde':'green','Cyan':'cyan','Azul':'blue','Purpura':'purple','Magenta':'magenta','Rosa':'pink'}
 	
-	elegir_color = [[sg.Text('Ingrese un color para las letras sin marcar'), sg.InputCombo(['Negro','Gris','Blanco','Rojo','Naranja','Dorado','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Plateado', key= 'sin_marca')],
-					[sg.Text('Ingrese un color para las letras marcadas'), sg.InputCombo(['Negro','Gris','Blanco','Rojo','Naranja','Dorado','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Dorado', key= 'con_marca')],
-					[sg.Text('Ingrese un color para los sustantivos'), sg.InputCombo(['Negro','Gris','Blanco','Rojo','Naranja','Dorado','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Rojo', key= 'sust')],
-					[sg.Text('Ingrese un color para los verbos'), sg.InputCombo(['Negro','Gris','Blanco','Rojo','Naranja','Dorado','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Amarillo', key= 'verb')],
-					[sg.Text('Ingrese un color para los adjetivos'), sg.InputCombo(['Negro','Gris','Blanco','Rojo','Naranja','Dorado','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Verde', key= 'adj')]]
+	elegir_color = [[sg.Text('Ingrese un color para los sustantivos'), sg.InputCombo(['Negro','Gris','Blanco','Rojo','Naranja','Dorado','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Rojo', key= 'color_sustantivo')],
+					[sg.Text('Ingrese un color para los verbos'), sg.InputCombo(['Negro','Gris','Blanco','Rojo','Naranja','Dorado','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Amarillo', key= 'color_verbo')],
+					[sg.Text('Ingrese un color para los adjetivos'), sg.InputCombo(['Negro','Gris','Blanco','Rojo','Naranja','Dorado','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Verde', key= 'color_adjetivo')]]
 	
 	elegir_ayuda = [[sg.Checkbox('Mostrar las definiciones de las palabras',key= 'mostrar_def')], 
 					[sg.Checkbox('Mostrar la lista de palabras a buscar',key= 'mostrar_lista')]]
@@ -113,16 +111,14 @@ def configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_pa
 			break
 		if boton == 'Listo':
 			#Condicion para que no se repitan los colores
-			if (values['sust'] != values['verb']) and (values['sust'] != values['adj']) and (values['sust'] != values['sin_marca']) and (values['sust'] != values['con_marca']) and (values['verb'] != values['adj']) and (values['verb'] != values['sin_marca']) and (values['verb'] != values['con_marca']) and (values['adj'] != values['sin_marca']) and (values['adj'] != values['con_marca']) and (values['sin_marca'] != values['con_marca']):
+			if (values['color_sustantivo'] != values['color_verbo']) and (values['color_sustantivo'] != values['color_adjetivo']) and (values['color_verbo'] != values['color_adjetivo']):
 				break
 			else:
-				sg.PopupError('Los colores de las palabras deben ser distintos!',grab_anywhere=True)
+				sg.PopupOK('Los colores de las palabras deben ser distintos!',grab_anywhere=True)
 	ventana.Close()
-	diccionario_colores["color_sin_marcar"]= values['sin_marca']
-	diccionario_colores["color_marcado"]= values['con_marca']
-	diccionario_colores["color_sustantivo"]= values['sust']
-	diccionario_colores["color_verbo"]= values['verb']
-	diccionario_colores["color_adjetivo"]= values['adj']
+	diccionario_colores["color_sustantivo"]= dic[values['color_sustantivo']]
+	diccionario_colores["color_verbo"]= dic[values['color_verbo']]
+	diccionario_colores["color_adjetivo"]= dic[values['color_adjetivo']]
 	tipo_ayuda["mostrar_definicion"]= values['mostrar_def']
 	tipo_ayuda["mostrar_lista"]= values['mostrar_lista']
 	orientacion_vertical.append(values["hor"])
@@ -131,9 +127,9 @@ def configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_pa
 	cant_palabras["cant_adjetivos"]= values['cant_adj']
 	sopa_mayusculas.append(values["mayus"])
 	
-#dic= Ingreso_de_palabras()
-print()
-#print(dic)
+# ~ dic= Ingreso_de_palabras()
+# ~ print()
+# ~ print(dic)
 diccionario_colores = {"color_sin_marcar": "", "color_marcado":"", "color_sustantivo":"","color_verbo":"","color_adjetivo":""}
 tipo_ayuda = {"mostrar_definicion": False, "mostrar_lista": False}
 orientacion_vertical =[]
