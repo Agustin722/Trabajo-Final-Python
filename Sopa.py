@@ -5,6 +5,7 @@ if sys.version_info[0] >= 3:
     import PySimpleGUI as sg  
 else:  
     import PySimpleGUI27 as sg  
+import Configuracion_sopa
 
 def agregar_clase_palabra_horizontal (palabras_lista, cant_palabras, coord_palabras, layout, cant_columas, cant_filas):
 	for i in range(cant_palabras):
@@ -26,27 +27,14 @@ def convertir_vertical (layout, cant_columnas, cant_filas):
 		for fila in range(cant_filas):
 			layout_vertical[columna].append(layout[fila][columna])
 	return layout_vertical		
+
+
 #Opciones:
 
-def configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_palabras,sopa_mayusculas,paleta_colores):
-	
-		
-def ingreso_palabras():
-	return diccionario_palabras
-	
-def ventana_parametros():
-	vertical = False
-	layout_opciones = [[sg.Checkbox('Sopa de letras vertical', key = "opcion_vertical", default=False,text_color = "black")],
-					[sg.Submit("Comenzar")]]
-	window = sg.Window('Opciones', layout_opciones)  
-	event, values = window.Read() 
-	if event is "Comenzar":
-		if values["opcion_vertical"]:
-			print( event, values)
-			vertical=True	
-	return vertical
-	
 #Programa Principal
+
+
+
 #definir Opciones
 
 diccionario_colores = {"color_sin_marcar": "", "color_marcado":"", "color_sustantivo":"","color_verbo":"","color_adjetivo":""}
@@ -56,42 +44,43 @@ cant_palabras = {"cant_sustantivos":0,"cant_verbos":0,"cant_adjetivos":0}
 sopa_mayusculas = []
 paleta_colores = {"color_ventana":"","color_letras":"","color_botones":"","color_sopa":""}
 #invocacion a configuracion
-configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_palabras,sopa_mayusculas,paleta_colores)
+Configuracion_sopa.configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_palabras,sopa_mayusculas)
 
-diccionario_palabras = ingreso_palabras();		
+diccionario_palabras = Configuracion_sopa.Ingreso_de_palabras ()		
 
-# ~ sustantivos = diccionario_palabras[] 
-# ~ verbos = 
-# ~ adjetivos = 
-sustantivos = {"pelota": "objeto redondo", "celular": "medio de comunicacion", "teclado": "dispositivo para escribir", "lapicera" : "objeto usado para escribir"}
-verbos = {"hacer": "...", "tomar": "...", "jugar": "...", "hablar" : "..."}
-adjetivos = {"feo": "...", "rojizo": "...", "grande": "...", "colorido" : "..."}
-
-color_sin_marcar = color["desmarcado"]
-color_marcado_sustantivo = "brown2"
-color_marcado_verbo= "goldenrod2"
-color_marcado_adjetivo = "chartreuse3"
+# ~ sustantivos = {"pelota": "objeto redondo", "celular": "medio de comunicacion", "teclado": "dispositivo para escribir", "lapicera" : "objeto usado para escribir"}
+# ~ verbos = {"hacer": "...", "tomar": "...", "jugar": "...", "hablar" : "..."}
+# ~ adjetivos = {"feo": "...", "rojizo": "...", "grande": "...", "colorido" : "..."}
+vertical = not orientacion_vertical[0]
+color_sin_marcar = "grey35"
+color_marcado_sustantivo = diccionario_colores["color_sustantivo"]
+color_marcado_verbo= diccionario_colores["color_verbo"]
+color_marcado_adjetivo = diccionario_colores["color_adjetivo"]
 
 #Variable Vertical
-lista_letras_mayusculas=[]
-lista_letras_minusculas=[]
+# ~ lista_letras_mayusculas=[]
+# ~ lista_letras_minusculas=[]
 	
-if sopa_mayusculas[0]:
+#if sopa_mayusculas[0]:
 	#usar upper con map y lambda
-	sustantivos_lista = list(sustantivos.keys())
-	verbos_lista = list(verbos.keys())
-	adjetivos_lista = list(adjetivos.keys())
-	lista_letras = lista_letras_mayusculas
+	# ~ sustantivos_lista = list(sustantivos.keys())
+	# ~ verbos_lista = list(verbos.keys())
+	# ~ adjetivos_lista = list(adjetivos.keys())
+	# ~ lista_letras = lista_letras_mayusculas
 
-sustantivos_lista = list(sustantivos.keys())
-verbos_lista = list(verbos.keys())
-adjetivos_lista = list(adjetivos.keys())
-cant_sustantivos = 2
-cant_adjetivos = 3
-cant_verbos =2
+sustantivos_lista = list(diccionario_palabras["NN"].keys())
+verbos_lista = list(diccionario_palabras["VB"].keys())
+adjetivos_lista = list(diccionario_palabras["JJ"].keys())
+
+cant_sustantivos =int(cant_palabras["cant_sustantivos"]) 
+cant_adjetivos = int(cant_palabras["cant_adjetivos"])
+cant_verbos =int(cant_palabras["cant_verbos"])
+
 #Horizontal
+
 largo_min = max(len(max(sustantivos_lista,key=len)),len(max(verbos_lista,key=len)),len(max(adjetivos_lista,key=len)))
 alto_min = cant_sustantivos + cant_adjetivos + cant_verbos
+
 cant_filas = alto_min +3
 cant_columas = largo_min + 4
 
@@ -106,7 +95,7 @@ for i in range (cant_filas):
 	layout_sopa.append(row)
 	
 agregar_clase_palabra_horizontal(sustantivos_lista, cant_sustantivos,coord_sustantivos , layout_sopa, cant_columas, cant_filas)
-agregar_clase_palabra_horizontal(verbos_lista, cant_verbos,coord_verbos, layout_sopa, cant_columas, cant_filas)
+agregar_clase_palabra_horizontal(verbos_lista,	 cant_verbos,coord_verbos, layout_sopa, cant_columas, cant_filas)
 agregar_clase_palabra_horizontal(adjetivos_lista, cant_adjetivos,coord_adjetivos, layout_sopa, cant_columas, cant_filas)
 
 print(coord_sustantivos)
@@ -128,9 +117,9 @@ verbos_marcados =[]
 adjetivos_marcados =[]
 
 columna1 = [[sg.Text('Opciones ',background_color ="grey20", text_color = "snow", justification='center', size=(10, 1))],      
-               [sg.Radio('Sustantivo', "clase_palabra",key = "sustantivo_radio",size=(10, 15),font = 25,text_color = "grey15" ,background_color = "brown2",		pad=(10,10), default=True )],
-               [sg.Radio('Verbo', "clase_palabra",key = "verbo_radio",			size=(10, 15),font = 25,text_color = "grey15" ,background_color = "goldenrod2" ,pad=(10,10) )],
-               [sg.Radio('Adjetivo', "clase_palabra",key = "adjetivo_radio", 	size=(10, 15),font = 25,text_color = "grey15" ,background_color = "chartreuse3",pad=(10,10) )],
+               [sg.Radio('Sustantivo', "clase_palabra",key = "sustantivo_radio",size=(10, 15),font = 25,text_color = "grey15" ,background_color = diccionario_colores["color_sustantivo"],		pad=(10,10), default=True )],
+               [sg.Radio('Verbo', "clase_palabra",key = "verbo_radio",			size=(10, 15),font = 25,text_color = "grey15" ,background_color = diccionario_colores["color_verbo"] ,pad=(10,10) )],
+               [sg.Radio('Adjetivo', "clase_palabra",key = "adjetivo_radio", 	size=(10, 15),font = 25,text_color = "grey15" ,background_color = diccionario_colores["color_adjetivo"],pad=(10,10) )],
                [sg.Button("Comprobar", key = "comprobar_boton", button_color = ("black","LightSkyBlue2"),size=(20, 10),pad=(10,10) )],
                [sg.Exit(button_color=("black","LightSkyBlue2"),pad=(60,150))]]
 
