@@ -67,7 +67,7 @@ def Ingreso_de_palabras():
 					arch.close()
 				dic[tipo][palabra]= definicion
 			except AttributeError:
-				if palabra != '':
+				if palabra != '' and not palabra.startswith(' '):
 					reporte= palabra +' no se encuentra en Wikcionario'
 					arch= open('reporte.txt','a')
 					arch.write('-'+reporte+'\n')
