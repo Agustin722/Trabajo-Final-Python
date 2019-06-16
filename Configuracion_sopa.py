@@ -25,72 +25,80 @@ def Ingreso_de_palabras():
 	adjetivos= []
 	while True:
 		boton, values1= ventana1.Read()
-		if boton is None or boton == 'Listo':
+		if boton is None:
 			break
+		elif boton == 'Listo':
+			if(len(sustantivos) != 0 or len(verbos) != 0 or len(adjetivos) != 0):
+				break
+			else:
+				sg.PopupOK('Error, Ingrese al menos una palabra de los tipos pedidos',grab_anywhere=True)
 		else:
 			palabra= values1['palabra']
-			palabra= singularize(palabra)
-			articulo= wiki.search(palabra)
-			try:
-				secciones= articulo.sections
-				pos= 0
-				#Verificacion de cual seccion tiene la informacion del tipo y definicion de la palabra ingresada
-				while(not secciones[pos].title.startswith(('Sus','Ver','Ad','For')) and pos < len(secciones)- 1):
-					pos= pos + 1
-				seccion= secciones[pos]
-				lista_seccion= seccion.string.split('\n')
-				if seccion.title.startswith('Sustantivo'):
-					tipo= 'NN'
-					if not(palabra in sustantivos):
-						sustantivos.append(palabra)
-					pos= 7
-				elif seccion.title.startswith('Verbo') or 'verbal' in seccion.title:
-					tipo= 'VB'
-					if not(palabra in verbos):
-						verbos.append(palabra)
-					pos= 2
-				elif seccion.title.startswith('Adjetivo') or 'adjetiva' in seccion.title:
-					tipo= 'JJ'
-					if not(palabra in adjetivos):
-						adjetivos.append(palabra)
-					pos= 10 if seccion.title.startswith('Adjetivo') else 2
-				#Muestra que palabras se han ingresado hasta ahora
-				ventana1.Element('muestra').Update('Sustantivos: '+ str(sustantivos) +'\n'+'Verbos: '+str(verbos)+'\n'+'Adjetivos: '+str(adjetivos))
-				#Se busca la 1era definicion de la palabra
-				while(not lista_seccion[pos].startswith('1')):
-					pos= pos + 1
-				definicion= lista_seccion[pos][1:]
-				if tipo != parse(palabra).split('/')[1]:
-					reporte= 'El tipo de '+ palabra +' que indica Wikcionario no coincide con el tipo que indica pattern'
-					arch= open('reporte.txt','a')
-					arch.write('-'+reporte+'\n')
-					arch.close()
-				dic[tipo][palabra]= definicion
-			except AttributeError:
-				if palabra != '' and not palabra.startswith(' '):
-					reporte= palabra +' no se encuentra en Wikcionario'
-					arch= open('reporte.txt','a')
-					arch.write('-'+reporte+'\n')
-					arch.close()
-					tipo= parse(palabra).split('/')[1]
-					if tipo == 'NN':
+			if palabra != '' and not palabra.startswith(' '):
+				palabra= singularize(palabra)
+				articulo= wiki.search(palabra)
+				try:
+					secciones= articulo.sections
+					pos= 0
+					#Verificacion de cual seccion tiene la informacion del tipo y definicion de la palabra ingresada
+					while(not secciones[pos].title.startswith(('Sus','Ver','Ad','For')) and pos < len(secciones)- 1):
+						pos= pos + 1
+					seccion= secciones[pos]
+					lista_seccion= seccion.string.split('\n')
+					if seccion.title.startswith('Sustantivo'):
+						tipo= 'NN'
 						if not(palabra in sustantivos):
 							sustantivos.append(palabra)
-					elif tipo == 'VB':
+						pos= 7
+					elif seccion.title.startswith('Verbo') or 'verbal' in seccion.title:
+						tipo= 'VB'
 						if not(palabra in verbos):
 							verbos.append(palabra)
-					elif tipo == 'JJ':
+						pos= 2
+					elif seccion.title.startswith('Adjetivo') or 'adjetiva' in seccion.title:
+						tipo= 'JJ'
 						if not(palabra in adjetivos):
 							adjetivos.append(palabra)
+						pos= 10 if seccion.title.startswith('Adjetivo') else 2
+					#Muestra que palabras se han ingresado hasta ahora
 					ventana1.Element('muestra').Update('Sustantivos: '+ str(sustantivos) +'\n'+'Verbos: '+str(verbos)+'\n'+'Adjetivos: '+str(adjetivos))
-					disenio2 =[[sg.Text('La palabra no esta en Wikcionario')],
-								[sg.Text('Ingrese una definicion para la palabra '+ palabra), sg.InputText(do_not_clear=False, key= 'definicion')],
-								[sg.Button("Agregar")]]
-					ventana2= sg.Window('Ingreso de definicion').Layout(disenio2)
-					boton, values2= ventana2.Read()
-					definicion= values2['definicion']
+					#Se busca la 1era definicion de la palabra
+					while(not lista_seccion[pos].startswith('1')):
+						pos= pos + 1
+					definicion= lista_seccion[pos][1:]
+					if tipo != parse(palabra).split('/')[1]:
+						reporte= 'El tipo de '+ palabra +' que indica Wikcionario no coincide con el tipo que indica pattern'
+						arch= open('reporte.txt','a')
+						arch.write('-'+reporte+'\n')
+						arch.close()
 					dic[tipo][palabra]= definicion
-					ventana2.Close()
+				except AttributeError:
+					if palabra != '' and not palabra.startswith(' '):
+						reporte= palabra +' no se encuentra en Wikcionario'
+						arch= open('reporte.txt','a')
+						arch.write('-'+reporte+'\n')
+						arch.close()
+						tipo= parse(palabra).split('/')[1]
+						if tipo == 'NN':
+							if not(palabra in sustantivos):
+								sustantivos.append(palabra)
+						elif tipo == 'VB':
+							if not(palabra in verbos):
+								verbos.append(palabra)
+						elif tipo == 'JJ':
+							if not(palabra in adjetivos):
+								adjetivos.append(palabra)
+						ventana1.Element('muestra').Update('Sustantivos: '+ str(sustantivos) +'\n'+'Verbos: '+str(verbos)+'\n'+'Adjetivos: '+str(adjetivos))
+						disenio2 =[[sg.Text('La palabra no esta en Wikcionario')],
+									[sg.Text('Ingrese una definicion para la palabra '+ palabra), sg.InputText(do_not_clear=False, key= 'definicion')],
+									[sg.Button("Agregar")]]
+						ventana2= sg.Window('Ingreso de definicion').Layout(disenio2)
+						boton, values2= ventana2.Read()
+						definicion= values2['definicion']
+						dic[tipo][palabra]= definicion
+						ventana2.Close()
+			else:
+				sg.PopupOK('Error, Ingrese la palabra otra vez',grab_anywhere=True)
 	ventana1.Close()
 	return dic
 	
