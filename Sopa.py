@@ -1,23 +1,19 @@
-import sys  
 import random
 import string
 import textwrap
-if sys.version_info[0] >= 3:  
-    import PySimpleGUI as sg  
-else:  
-    import PySimpleGUI27 as sg  
+import PySimpleGUI as sg  
 import Configuracion_sopa
 
-def agregar_clase_palabra_horizontal (palabras_lista, cant_palabras, coord_palabras, layout, cant_columas, cant_filas):
+def agregar_clase_palabra_horizontal (palabras_lista, cant_palabras, coord_palabras, layout, cant_columas, cant_filas, lista_letras):
 	for i in range(cant_palabras):
 		fila = random.randrange(cant_filas)
 		while len(layout[fila]) > 0:
 			fila = random.randrange(cant_filas) 
 		letras_inicio = random.randrange(cant_columas - len(palabras_lista[i]))	
 		for j in range(letras_inicio):
-			layout[fila].append(sg.Button( random.choice(string.ascii_letters).upper(), key = (fila,j), font = 15, button_color = ("black", color_sin_marcar),pad = (0,0)))
+			layout[fila].append(sg.Button( random.choice(lista_letras), key = (fila,j), font = 15, button_color = ("black", color_sin_marcar),pad = (0,0)))
 		for j in range(letras_inicio, letras_inicio + len(palabras_lista[i])):
-			layout[fila].append(sg.Button(palabras_lista[i][j-letras_inicio].upper(),key = (fila,j), font = 15, button_color = ("black", color_sin_marcar),pad = (0,0)))
+			layout[fila].append(sg.Button(palabras_lista[i][j-letras_inicio],key = (fila,j), font = 15, button_color = ("black", color_sin_marcar),pad = (0,0)))
 			coord_palabras.append((fila,j))
 
 def convertir_vertical (layout, cant_columnas, cant_filas):
@@ -63,17 +59,18 @@ color_marcado_sustantivo = diccionario_colores["color_sustantivo"]
 color_marcado_verbo= diccionario_colores["color_verbo"]
 color_marcado_adjetivo = diccionario_colores["color_adjetivo"]
 
-#Variable Vertical
-# ~ lista_letras_mayusculas=[]
-# ~ lista_letras_minusculas=[]
-	
 #if sopa_mayusculas[0]:
-	#usar upper con map y lambda
-	# ~ sustantivos_lista = list(sustantivos.keys())
-	# ~ verbos_lista = list(verbos.keys())
-	# ~ adjetivos_lista = list(adjetivos.keys())
-	# ~ lista_letras = lista_letras_mayusculas
 
+if sopa_mayusculas[0]:
+	lista_letras = string.ascii_uppercase
+	sustantivos_lista_sopa = list(map(lambda x: x.upper() , sustantivos_lista))	
+	verbos_lista_sopa = list(map(lambda x: x.upper() , verbos_lista))	
+	adjetivos_lista_sopa = list(map(lambda x: x.upper() , adjetivos_lista))	
+else:
+	sustantivos_lista_sopa = sustantivos_lista	
+	verbos_lista_sopa = verbos_lista	
+	adjetivos_lista_sopa = adjetivos_lista
+	lista_letras = string.ascii_lowercase
 
 #Horizontal
 
@@ -87,15 +84,16 @@ layout_sopa = []
 coord_sustantivos =[]
 coord_verbos =[]
 coord_adjetivos =[]
+
 #Opciones para el estilo de la sopa de letras
 sg.SetOptions(button_element_size=(4, 2), auto_size_buttons=False,background_color="grey20")	
 for i in range (cant_filas):
 	row = []
 	layout_sopa.append(row)
 	
-agregar_clase_palabra_horizontal(sustantivos_lista, cant_sustantivos,coord_sustantivos , layout_sopa, cant_columas, cant_filas)
-agregar_clase_palabra_horizontal(verbos_lista,	 cant_verbos,coord_verbos, layout_sopa, cant_columas, cant_filas)
-agregar_clase_palabra_horizontal(adjetivos_lista, cant_adjetivos,coord_adjetivos, layout_sopa, cant_columas, cant_filas)
+agregar_clase_palabra_horizontal(sustantivos_lista_sopa, cant_sustantivos,coord_sustantivos , layout_sopa, cant_columas, cant_filas,lista_letras)
+agregar_clase_palabra_horizontal(verbos_lista_sopa,	 cant_verbos,coord_verbos, layout_sopa, cant_columas, cant_filas,lista_letras)
+agregar_clase_palabra_horizontal(adjetivos_lista_sopa, cant_adjetivos,coord_adjetivos, layout_sopa, cant_columas, cant_filas,lista_letras)
 
 print(coord_sustantivos)
 print(coord_verbos)
@@ -106,7 +104,7 @@ for fila in range (cant_filas):
 		fila_llena = len(layout_sopa[fila])
 		letras_faltantes = cant_columas - len(layout_sopa[fila])
 		for j in range (letras_faltantes):
-			layout_sopa[fila].append(sg.Button( random.choice(string.ascii_letters).upper(), font = 15, key = (fila,j+fila_llena), button_color = ("black", color_sin_marcar),pad = (0,0)))
+			layout_sopa[fila].append(sg.Button( random.choice(lista_letras), font = 15, key = (fila,j+fila_llena), button_color = ("black", color_sin_marcar),pad = (0,0)))
 
 if vertical:
 	layout_sopa = convertir_vertical(layout_sopa,cant_columas, cant_filas) 
@@ -134,13 +132,13 @@ if tipo_ayuda["mostrar_definicion"] and not tipo_ayuda["mostrar_lista"]:
 if tipo_ayuda["mostrar_lista"] and not tipo_ayuda["mostrar_definicion"]:
 	sustantivos_ayuda =[]
 	for i in sustantivos_lista:
-		sustantivos_ayuda.append([sg.Text("- " + i).upper()])
+		sustantivos_ayuda.append([sg.Text("- " + i.upper())])
 	verbos_ayuda =[]
 	for i in verbos_lista:
-		verbos_ayuda.append([sg.Text("- " + i).upper()])
+		verbos_ayuda.append([sg.Text("- " + i.upper())])
 	adjetivos_ayuda =[]
 	for i in adjetivos_lista:
-		adjetivos_ayuda.append([sg.Text("- " + i).upper()])
+		adjetivos_ayuda.append([sg.Text("- " + i.upper())])
 	lista_ayuda.append([sg.Frame("Sustantivos:",sustantivos_ayuda)])
 	lista_ayuda.append([sg.Frame("Verbos:",verbos_ayuda)])
 	lista_ayuda.append([sg.Frame("Adjetivos:",adjetivos_ayuda)])
@@ -176,63 +174,108 @@ layout = [[sg.Column(columna_ayuda),sg.Frame('Sopa De Letras', layout_sopa,backg
 
 
 window = sg.Window('Mi Sopa de Letras', layout)  
-
-while True:                 # Event Loop  
+# Evento Sopa de letras:
+while True:
 	event, values = window.Read()  
-	
-	
-	print(event, values)
-	# ~ print(type(event), type(values))
-	
 	if event is None or event == 'Exit':  
 		break  
+		
+	#Boton Comprobar:
 	if event is "comprobar_boton":
+		#Desabilitando los botones ( el juego termino )
+		for i in range(cant_filas):
+			for j in range(cant_columas):
+				window.Element((i , j)).Update(disabled=True)
+
+		#Comprobar palabras
+		sustantivos_correctos = False
+		verbos_correctos = False
+		adjetivos_correctos = False
+						
+		#Comprobar sustantivos
 		if all(elem in sustantivos_marcados for elem in coord_sustantivos):
 			if len(coord_sustantivos) == len(sustantivos_marcados):
-				print("Sustantivos Correctos")
+				sustantivos_correctos = True
 			else:
-				print("Sustantivos Incorrectos")
+				sustantivos_correctos = False
 		else:
-			print("Adjetivos Incorrectos")	 
-					
+			sustantivos_correctos = False
+			
+		#Comprobar verbos
 		if all (elem in verbos_marcados for elem in coord_verbos):
 			if len(coord_verbos) == len(verbos_marcados):
-				print("Verbos Correctos")
+				verbos_correctos = True
 			else:
-				print("Verbos Incorrectos")	
+				verbos_correctos = False
 		else:
-			print("Adjetivos Incorrectos")	 
-					
+			verbos_correctos = False 
+		#Comprobar adjetivos			
 		if all (elem in adjetivos_marcados for elem in coord_adjetivos):
 			if len(coord_adjetivos) == len(adjetivos_marcados):
-				print("Adjetivos Correctos")
+				adjetivos_correctos = True
 			else:
-				print("Adjetivos Incorrectos")		
+				adjetivos_correctos = False		
 		else:
-			print("Adjetivos Incorrectos")	 
-		# ~ print("sustantivos: ",sustantivos_marcados)
-		# ~ print("verbos: " , verbos_marcados)
-		# ~ print("adjetivos: ", adjetivos_marcados)
+			adjetivos_correctos = False
+			
+		#Marcar elementos correctos e incorrectos en la grilla
+		for elem in sustantivos_marcados:
+			if elem in coord_sustantivos:
+				window.Element(elem).Update( button_color =("#ffffff","#36b575"))
+			else:
+				window.Element(elem).Update( button_color =("#fc5d82","#ea5266"))
+		for	elem in set(coord_sustantivos).difference(sustantivos_marcados):
+			window.Element(elem).Update( button_color =("#fc5d82","#4c5b4f"))
+		
+		for elem in verbos_marcados:
+			if elem in coord_verbos:
+				window.Element(elem).Update( button_color =("#ffffff","#36b575"))
+			else:
+				window.Element(elem).Update( button_color =("#fc5d82","#ea5266"))
+		for	elem in set(coord_verbos).difference(verbos_marcados):
+			window.Element(elem).Update( button_color =("#fc5d82","#4c5b4f"))
+			
+		for elem in adjetivos_marcados:
+			if elem in coord_adjetivos:
+				window.Element(elem).Update( button_color =("#ffffff","#36b575"))
+			else:
+				window.Element(elem).Update( button_color =("#fc5d82","#ea5266"))
+		for	elem in set(coord_adjetivos).difference(adjetivos_marcados):
+			window.Element(elem).Update( button_color =("#fc5d82","#4c5b4f"))
+		
+		
+			
+		
+		#ventana que nos dice si lo hicimos bien
+		if sustantivos_correctos and verbos_correctos and adjetivos_correctos:
+			window_final = sg.Window('Mi Sopa de Letras', [[sg.Text("¡Felicidades! Completaste la sopa de letras correctamente.")],[sg.CloseButton ("OK")]]) 
+		else:
+			window_final = sg.Window('Mi Sopa de Letras', [[sg.Text("¡Que pena! Deberias intentarlo denuevo.")],[sg.CloseButton ("OK")]]) 
+		event, values = window_final.Read()
+		
+		
 	else:
 		if(values["sustantivo_radio"]):
-			if(sustantivos_marcados.count(event)>0):
+			if(sustantivos_marcados.count(event)>0) and event not in (verbos_marcados + adjetivos_marcados):
 				sustantivos_marcados.remove(event)
 				window.Element(event).Update( button_color =("black",color_sin_marcar))
-			else:
+			elif event not in (verbos_marcados + adjetivos_marcados):
 				sustantivos_marcados.append(event)
 				window.Element(event).Update( button_color =("black",color_marcado_sustantivo))
+		
 		elif(values["verbo_radio"]):
-			if(verbos_marcados.count(event)>0):
+			if(verbos_marcados.count(event)>0) and event not in (sustantivos_marcados + adjetivos_marcados):
 				verbos_marcados.remove(event)
 				window.Element(event).Update( button_color =("black",color_sin_marcar))
-			else:
+			elif event not in (sustantivos_marcados + adjetivos_marcados):
 				verbos_marcados.append(event)
 				window.Element(event).Update( button_color =("black",color_marcado_verbo))
+		
 		elif (values["adjetivo_radio"]):
-			if(adjetivos_marcados.count(event)>0):
+			if(adjetivos_marcados.count(event)>0) and  event not in (sustantivos_marcados + verbos_marcados):
 				adjetivos_marcados.remove(event)
 				window.Element(event).Update( button_color =("black",color_sin_marcar))
-			else:
+			elif event not in (verbos_marcados + sustantivos_marcados):
 				adjetivos_marcados.append(event)
 				window.Element(event).Update( button_color =("black",color_marcado_adjetivo))
 window.Close()
