@@ -4,6 +4,6 @@ To-Do list [Agus]:
 
 To-Do list [Elvis]:
 - Show Errors on the interface (also "congrats!")
-- Upper and Lower letters in the soup
+- [Done] Upper and Lower letters in the soup
 - [Done] Add 'help options' 
 - [Done] Max number of words conflict
