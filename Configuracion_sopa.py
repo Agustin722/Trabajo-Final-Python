@@ -34,7 +34,7 @@ def Ingreso_de_palabras():
 				sg.PopupOK('Error, Ingrese al menos una palabra de los tipos pedidos',grab_anywhere=True)
 		else:
 			palabra= values1['palabra']
-			if palabra != '' and not palabra.startswith(' '):
+			if palabra != '' and not palabra.startswith(' ') and not palabra.endswith(' '):
 				palabra= singularize(palabra)
 				articulo= wiki.search(palabra)
 				try:
@@ -73,30 +73,29 @@ def Ingreso_de_palabras():
 						arch.close()
 					dic[tipo][palabra]= definicion
 				except AttributeError:
-					if palabra != '' and not palabra.startswith(' '):
-						reporte= palabra +' no se encuentra en Wikcionario'
-						arch= open('reporte.txt','a')
-						arch.write('-'+reporte+'\n')
-						arch.close()
-						tipo= parse(palabra).split('/')[1]
-						if tipo == 'NN':
-							if not(palabra in sustantivos):
-								sustantivos.append(palabra)
-						elif tipo == 'VB':
-							if not(palabra in verbos):
-								verbos.append(palabra)
-						elif tipo == 'JJ':
-							if not(palabra in adjetivos):
-								adjetivos.append(palabra)
-						ventana1.Element('muestra').Update('Sustantivos: '+ str(sustantivos) +'\n'+'Verbos: '+str(verbos)+'\n'+'Adjetivos: '+str(adjetivos))
-						disenio2 =[[sg.Text('La palabra no esta en Wikcionario')],
-									[sg.Text('Ingrese una definicion para la palabra '+ palabra), sg.InputText(do_not_clear=False, key= 'definicion')],
-									[sg.Button("Agregar")]]
-						ventana2= sg.Window('Ingreso de definicion').Layout(disenio2)
-						boton, values2= ventana2.Read()
-						definicion= values2['definicion']
-						dic[tipo][palabra]= definicion
-						ventana2.Close()
+					reporte= palabra +' no se encuentra en Wikcionario'
+					arch= open('reporte.txt','a')
+					arch.write('-'+reporte+'\n')
+					arch.close()
+					tipo= parse(palabra).split('/')[1]
+					if tipo == 'NN':
+						if not(palabra in sustantivos):
+							sustantivos.append(palabra)
+					elif tipo == 'VB':
+						if not(palabra in verbos):
+							verbos.append(palabra)
+					elif tipo == 'JJ':
+						if not(palabra in adjetivos):
+							adjetivos.append(palabra)
+					ventana1.Element('muestra').Update('Sustantivos: '+ str(sustantivos) +'\n'+'Verbos: '+str(verbos)+'\n'+'Adjetivos: '+str(adjetivos))
+					disenio2 =[[sg.Text('La palabra no esta en Wikcionario')],
+								[sg.Text('Ingrese una definicion para la palabra '+ palabra), sg.InputText(do_not_clear=False, key= 'definicion')],
+								[sg.Button("Agregar")]]
+					ventana2= sg.Window('Ingreso de definicion').Layout(disenio2)
+					boton, values2= ventana2.Read()
+					definicion= values2['definicion']
+					dic[tipo][palabra]= definicion
+					ventana2.Close()
 			else:
 				sg.PopupOK('Error, Ingrese la palabra otra vez',grab_anywhere=True)
 	ventana1.Close()
