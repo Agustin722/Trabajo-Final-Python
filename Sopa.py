@@ -74,7 +74,10 @@ else:
 
 #Horizontal
 
-largo_min = max(len(max(sustantivos_lista,key=len)),len(max(verbos_lista,key=len)),len(max(adjetivos_lista,key=len)))
+# ~ largo_min = max(len(max(sustantivos_lista,key=len)),len(max(verbos_lista,key=len)),len(max(adjetivos_lista,key=len)))
+largo_min = max(len(max(sustantivos_lista, key=len))if len(sustantivos_lista) != 0 else 0,
+				len(max(verbos_lista, key=len))if len(verbos_lista) != 0 else 0,
+				len(max(adjetivos_lista, key=len))if len(adjetivos_lista) != 0 else 0)
 alto_min = cant_sustantivos + cant_adjetivos + cant_verbos
 
 cant_filas = alto_min +3
