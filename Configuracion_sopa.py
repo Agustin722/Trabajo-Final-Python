@@ -11,15 +11,38 @@ def Ingreso_de_palabras():
 	
 	from pattern.web import Wiktionary
 	from pattern.es import parse, split, singularize
+	import os
 	import PySimpleGUI as sg
+	
+	def asignar_tipo(titulo, sustantivos, verbos, adjetivos):
+		# ~ Recibe el titulo de el objeto WiktionarySection y
+		# ~ devuelve el tipo de palabra que es la palabra 
+		# ~ ingresada, de acuerdo a ese titulo y actualiza
+		# ~ la lista de ese tipo para que lo muestre en la ventana
+		
+		if titulo.startswith('Sustantivo'):
+			tipo= 'NN'
+			if not(palabra in sustantivos):
+				sustantivos.append(palabra)
+		elif titulo.startswith('Verbo') or 'verbal' in titulo:
+			tipo= 'VB'
+			if not(palabra in verbos):
+				verbos.append(palabra)
+		elif titulo.startswith('Adjetivo') or 'adjetiva' in titulo:
+			tipo= 'JJ'
+			if not(palabra in adjetivos):
+				adjetivos.append(palabra)
+		return tipo
+						
 	wiki= Wiktionary(language= "es")
 	dic= {'NN':{},'VB':{},'JJ':{}}
 	disenio1 =[[sg.Text('Ingrese un sustantivo, verbo o adjetivo para agregar a las palabras de la sopa de letras'), sg.InputText(do_not_clear=False, key= 'palabra')],
 			[sg.Output(size=(115,3), key= 'muestra')],
 			[sg.Button("Agregar"), sg.Button("Listo")]]
 	ventana1= sg.Window('Ingreso de palabras').Layout(disenio1)
-	arch= open('reporte.txt','w')
-	arch.close()
+	if not('reporte.txt' in os.listdir()):
+		arch= open('reporte.txt','x')
+		arch.close()
 	sustantivos= []
 	verbos= []
 	adjetivos= []
@@ -45,33 +68,20 @@ def Ingreso_de_palabras():
 						pos= pos + 1
 					seccion= secciones[pos]
 					lista_seccion= seccion.string.split('\n')
-					if seccion.title.startswith('Sustantivo'):
-						tipo= 'NN'
-						if not(palabra in sustantivos):
-							sustantivos.append(palabra)
-						pos= 7
-					elif seccion.title.startswith('Verbo') or 'verbal' in seccion.title:
-						tipo= 'VB'
-						if not(palabra in verbos):
-							verbos.append(palabra)
-						pos= 2
-					elif seccion.title.startswith('Adjetivo') or 'adjetiva' in seccion.title:
-						tipo= 'JJ'
-						if not(palabra in adjetivos):
-							adjetivos.append(palabra)
-						pos= 10 if seccion.title.startswith('Adjetivo') else 2
+					pos= 0
+					tipo= asignar_tipo(seccion.title, sustantivos, verbos, adjetivos)
 					#Muestra que palabras se han ingresado hasta ahora
 					ventana1.Element('muestra').Update('Sustantivos: '+ str(sustantivos) +'\n'+'Verbos: '+str(verbos)+'\n'+'Adjetivos: '+str(adjetivos))
 					#Se busca la 1era definicion de la palabra
 					while(not lista_seccion[pos].startswith('1')):
 						pos= pos + 1
 					definicion= lista_seccion[pos][1:]
+					#Agrega en el reporte si el tipo de palabra que indican pattern y wikcionary difiere
 					if tipo != parse(palabra).split('/')[1]:
 						reporte= 'El tipo de '+ palabra +' que indica Wikcionario no coincide con el tipo que indica pattern'
 						arch= open('reporte.txt','a')
 						arch.write('-'+reporte+'\n')
 						arch.close()
-					dic[tipo][palabra]= definicion
 				except AttributeError:
 					reporte= palabra +' no se encuentra en Wikcionario'
 					arch= open('reporte.txt','a')
@@ -94,8 +104,8 @@ def Ingreso_de_palabras():
 					ventana2= sg.Window('Ingreso de definicion').Layout(disenio2)
 					boton, values2= ventana2.Read()
 					definicion= values2['definicion']
-					dic[tipo][palabra]= definicion
 					ventana2.Close()
+				dic[tipo][palabra]= definicion
 			else:
 				sg.PopupOK('Error, Ingrese la palabra otra vez',grab_anywhere=True)
 	ventana1.Close()
@@ -106,11 +116,12 @@ def configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_pa
 	# devolviendo los valores ingresados en estructuras de datos.
 	# En caso de que los colores se repitan se abre una ventana para avisar de esto.
 	import PySimpleGUI as sg
-	dic= {'Negro':'black','Gris':'gray','Blanco':'white','Rojo':'#f94a4f','Naranja':'#f29646','Dorado':'gold','Plateado':'silver','Amarillo':'#f9e54a','Verde':'green','Cyan':'#2dc7e2','Azul':'#478de8','Purpura':'#9453c6','Magenta':'#dc6be0','Rosa':'#f78383'}
+	dic_colores= {'Rojo':'#f94a4f','Naranja':'#f29646','Plateado':'silver','Amarillo':'#f9e54a','Verde':'green','Cyan':'#2dc7e2','Azul':'#478de8','Purpura':'#9453c6','Magenta':'#dc6be0','Rosa':'#f78383'}
+	colores_español= list(dic_colores.keys())
 	
-	elegir_color = [[sg.Text('Ingrese un color para los sustantivos'), sg.InputCombo(['Negro','Gris','Blanco','Rojo','Naranja','Dorado','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Rojo', key= 'color_sustantivo')],
-					[sg.Text('Ingrese un color para los verbos'), sg.InputCombo(['Negro','Gris','Blanco','Rojo','Naranja','Dorado','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Amarillo', key= 'color_verbo')],
-					[sg.Text('Ingrese un color para los adjetivos'), sg.InputCombo(['Negro','Gris','Blanco','Rojo','Naranja','Dorado','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Verde', key= 'color_adjetivo')]]
+	elegir_color = [[sg.Text('Ingrese un color para los sustantivos'), sg.InputCombo(colores_español, default_value='Rojo', key= 'color_sustantivo')],
+					[sg.Text('Ingrese un color para los verbos'), sg.InputCombo(colores_español, default_value='Amarillo', key= 'color_verbo')],
+					[sg.Text('Ingrese un color para los adjetivos'), sg.InputCombo(colores_español, default_value='Verde', key= 'color_adjetivo')]]
 	
 	elegir_ayuda = [[sg.Checkbox('Mostrar las definiciones de las palabras',key= 'mostrar_def')], 
 					[sg.Checkbox('Mostrar la lista de palabras a buscar',key= 'mostrar_lista')]]
@@ -141,9 +152,10 @@ def configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_pa
 			else:
 				sg.PopupOK('Los colores de las palabras deben ser distintos!',grab_anywhere=True)
 	ventana.Close()
-	diccionario_colores["color_sustantivo"]= dic[values['color_sustantivo']]
-	diccionario_colores["color_verbo"]= dic[values['color_verbo']]
-	diccionario_colores["color_adjetivo"]= dic[values['color_adjetivo']]
+	#Asignacion de los valores que se devuelven al programa principal
+	diccionario_colores["color_sustantivo"]= dic_colores[values['color_sustantivo']]
+	diccionario_colores["color_verbo"]= dic_colores[values['color_verbo']]
+	diccionario_colores["color_adjetivo"]= dic_colores[values['color_adjetivo']]
 	tipo_ayuda["mostrar_definicion"]= values['mostrar_def']
 	tipo_ayuda["mostrar_lista"]= values['mostrar_lista']
 	orientacion_vertical.append(values["hor"])
