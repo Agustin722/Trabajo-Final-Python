@@ -43,6 +43,15 @@ def marcar_palabras (palabras_marcadas, coord, palabras_marcadas_2, palabras_mar
 		palabras_marcadas.append(coord)
 		window.Element(coord).Update( button_color =("black",color_marcado))
 
+def correccion_cambiar (palabras_marcadas, coord_palabras):	
+	for elem in palabras_marcadas:
+		if elem in coord_palabras:
+			window.Element(elem).Update( button_color =("#ffffff","#36b575"))
+		else:
+			window.Element(elem).Update( button_color =("#fc5d82","#ea5266"))
+	for	elem in set(coord_palabras).difference(palabras_marcadas):
+		window.Element(elem).Update( button_color =("#fc5d82","#9DB4A2"))
+		
 #Programa Principal
 
 wrapper = textwrap.TextWrapper(width=30) 
@@ -221,32 +230,9 @@ while True:
 		adjetivos_correctos = comprobar_palabras(adjetivos_marcados,coord_adjetivos)	
 			
 		#Marcar elementos correctos e incorrectos en la grilla
-		for elem in sustantivos_marcados:
-			if elem in coord_sustantivos:
-				window.Element(elem).Update( button_color =("#ffffff","#36b575"))
-			else:
-				window.Element(elem).Update( button_color =("#fc5d82","#ea5266"))
-		for	elem in set(coord_sustantivos).difference(sustantivos_marcados):
-			window.Element(elem).Update( button_color =("#fc5d82","#9DB4A2"))
-		
-		for elem in verbos_marcados:
-			if elem in coord_verbos:
-				window.Element(elem).Update( button_color =("#ffffff","#36b575"))
-			else:
-				window.Element(elem).Update( button_color =("#fc5d82","#ea5266"))
-		for	elem in set(coord_verbos).difference(verbos_marcados):
-			window.Element(elem).Update( button_color =("#fc5d82","#9DB4A2"))
-			
-		for elem in adjetivos_marcados:
-			if elem in coord_adjetivos:
-				window.Element(elem).Update( button_color =("#ffffff","#36b575"))
-			else:
-				window.Element(elem).Update( button_color =("#fc5d82","#ea5266"))
-		for	elem in set(coord_adjetivos).difference(adjetivos_marcados):
-			window.Element(elem).Update( button_color =("#fc5d82","#9DB4A2"))
-		
-		
-			
+		correccion_cambiar(sustantivos_marcados, coord_sustantivos)
+		correccion_cambiar(verbos_marcados, coord_verbos)
+		correccion_cambiar(adjetivos_marcados, coord_adjetivos)
 		
 		#ventana con el resultado
 		if sustantivos_correctos and verbos_correctos and adjetivos_correctos:
