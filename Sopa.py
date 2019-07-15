@@ -1,8 +1,16 @@
+#Alumnos:
+# Motocanchi Huanca, Elvis David
+# D'Aragona Agustin Alejandro
+
 import random
 import string
 import textwrap
 import PySimpleGUI as sg  
 import Configuracion_sopa
+import time
+import json
+from Raspberry_aplicaciones import registro_ambiental
+from Raspberry_Clases import Sonido
 
 def agregar_clase_palabra_horizontal (palabras_lista, cant_palabras, coord_palabras, layout, cant_columas, cant_filas, lista_letras):
 	for i in range(cant_palabras):
@@ -53,7 +61,8 @@ def correccion_cambiar (palabras_marcadas, coord_palabras):
 		window.Element(elem).Update( button_color =("#fc5d82","#9DB4A2"))
 		
 #Programa Principal
-
+# Comienzo del contador para la actualizacion del archivo datos-oficinas.json
+tiempo= time.time()
 wrapper = textwrap.TextWrapper(width=30) 
 diccionario_colores = {"color_sin_marcar": "", "color_marcado":"", "color_sustantivo":"","color_verbo":"","color_adjetivo":""}
 tipo_ayuda = {"mostrar_definicion": False, "mostrar_lista": False}
@@ -61,12 +70,46 @@ orientacion_vertical =[]
 cant_palabras = {"cant_sustantivos":0,"cant_verbos":0,"cant_adjetivos":0}
 sopa_mayusculas = []
 paleta_colores = {"color_ventana":"","color_letras":"","color_botones":"","color_sopa":""}
+oficina_asignada= []
 
 #invocacion a configuracion
 diccionario_palabras = Configuracion_sopa.Ingreso_de_palabras ()		
 cant_palabras_default = [len(list(diccionario_palabras["NN"].keys())),len(list(diccionario_palabras["VB"].keys())),len(list(diccionario_palabras["JJ"].keys()))]
-Configuracion_sopa.configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_palabras,sopa_mayusculas,cant_palabras_default)
+Configuracion_sopa.configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_palabras,sopa_mayusculas,cant_palabras_default,oficina_asignada)
 orientacion = orientacion_vertical[0]
+oficina= oficina_asignada[0]
+
+#Lectura del archivo Json de temperatura y humedad:
+archivo = open("Json_files/datos-oficinas.json", "r")
+datos_json = json.load(archivo)
+archivo.close()
+total= len(datos_json[oficina])
+promedio_temp= 0
+promedio_hum= 0
+for j in range(len(datos_json[oficina])):
+	promedio_temp= promedio_temp + datos_json[oficina][j]['temperatura']
+	promedio_hum= promedio_hum + datos_json[oficina][j]['humedad']
+promedio_temp= promedio_temp / total
+promedio_hum= promedio_hum / total
+
+#Cambiando look and feel acordingly:
+if promedio_temp < 10:
+	color_fondo = "#dff0ea"
+	color_secun = "#574f7d"
+	color_sin_marcar = "#95adbe"
+	color_boton = "#343975"
+
+elif promedio_temp > 30:
+	color_fondo = "#C14A6A"
+	color_secun = "#eb5f5d"
+	color_sin_marcar = "#fabc74"
+	color_boton = "#239f95"
+
+else:
+	color_fondo = "#b8e9c0"
+	color_secun = "#6384b3"
+	color_sin_marcar = "#e6f0b6"
+	color_boton = "#684949"
 
 #Lista random de las palabras 
 cant_sustantivos =int(cant_palabras["cant_sustantivos"])
@@ -83,8 +126,8 @@ sustantivos_lista = random.sample(list(diccionario_palabras["NN"].keys()),cant_s
 verbos_lista = 		random.sample(list(diccionario_palabras["VB"].keys()),cant_verbos)
 adjetivos_lista = 	random.sample(list(diccionario_palabras["JJ"].keys()),cant_adjetivos)
  
-color_sin_marcar = "grey35"
-color_fondo = "grey20"
+
+
 color_marcado_sustantivo = diccionario_colores["color_sustantivo"]
 color_marcado_verbo= diccionario_colores["color_verbo"]
 color_marcado_adjetivo = diccionario_colores["color_adjetivo"]
@@ -126,9 +169,12 @@ for i in range (cant_filas):
 	row = []
 	layout_sopa.append(row)
 	
-agregar_clase_palabra_horizontal(sustantivos_lista_sopa, cant_sustantivos,coord_sustantivos , 	layout_sopa, cant_columas, cant_filas,lista_letras) if cant_sustantivos>0 else None
-agregar_clase_palabra_horizontal(verbos_lista_sopa,	  cant_verbos,coord_verbos,			 		layout_sopa, cant_columas, cant_filas,lista_letras) if cant_verbos>0 else None
-agregar_clase_palabra_horizontal(adjetivos_lista_sopa,   cant_adjetivos,coord_adjetivos, 		layout_sopa, cant_columas, cant_filas,lista_letras) if cant_adjetivos>0 else None
+if cant_sustantivos>0:
+	agregar_clase_palabra_horizontal(sustantivos_lista_sopa, cant_sustantivos,coord_sustantivos , 	layout_sopa, cant_columas, cant_filas,lista_letras) 
+if cant_verbos>0:
+	agregar_clase_palabra_horizontal(verbos_lista_sopa,	  cant_verbos,coord_verbos,			 		layout_sopa, cant_columas, cant_filas,lista_letras)
+if cant_adjetivos>0:  
+	agregar_clase_palabra_horizontal(adjetivos_lista_sopa,   cant_adjetivos,coord_adjetivos, 		layout_sopa, cant_columas, cant_filas,lista_letras) 
 
 #Agregando letras faltantes por cada fila
 for fila in range (cant_filas):
@@ -146,62 +192,84 @@ lista_ayuda = []
 if tipo_ayuda["mostrar_definicion"] and not tipo_ayuda["mostrar_lista"]:
 	sustantivos_ayuda =[]
 	for i in sustantivos_lista:
-		sustantivos_ayuda.append([sg.Text("- "+ wrapper.fill(diccionario_palabras["NN"][i]),background_color ="grey20",text_color = "snow")])
+		sustantivos_ayuda.append([sg.Text("- "+ wrapper.fill(diccionario_palabras["NN"][i]),background_color =color_secun,text_color = "snow")])
 	verbos_ayuda =[]
 	for i in verbos_lista:
-		verbos_ayuda.append([sg.Text("- "+ wrapper.fill(diccionario_palabras["VB"][i]),background_color ="grey20",text_color = "snow")])
+		verbos_ayuda.append([sg.Text("- "+ wrapper.fill(diccionario_palabras["VB"][i]),background_color =color_secun,text_color = "snow")])
 	adjetivos_ayuda =[]
 	for i in adjetivos_lista:
-		adjetivos_ayuda.append([sg.Text("- "+ wrapper.fill(diccionario_palabras["JJ"][i]),background_color ="grey20",text_color = "snow")])
+		adjetivos_ayuda.append([sg.Text("- "+ wrapper.fill(diccionario_palabras["JJ"][i]),background_color =color_secun,text_color = "snow")])
 		
 elif tipo_ayuda["mostrar_lista"] and not tipo_ayuda["mostrar_definicion"]:
 	sustantivos_ayuda =[]
 	for i in sustantivos_lista:
-		sustantivos_ayuda.append([sg.Text("- " + i.upper(),background_color ="grey20",text_color = "snow")])
+		sustantivos_ayuda.append([sg.Text("- " + i.upper(),background_color =color_secun,text_color = "snow")])
 	verbos_ayuda =[]
 	for i in verbos_lista:
-		verbos_ayuda.append([sg.Text("- " + i.upper(),background_color ="grey20",text_color = "snow")])
+		verbos_ayuda.append([sg.Text("- " + i.upper(),background_color =color_secun,text_color = "snow")])
 	adjetivos_ayuda =[]
 	for i in adjetivos_lista:
-		adjetivos_ayuda.append([sg.Text("- " + i.upper(),background_color ="grey20",text_color = "snow")])
+		adjetivos_ayuda.append([sg.Text("- " + i.upper(),background_color =color_secun,text_color = "snow")])
 	
 elif tipo_ayuda["mostrar_definicion"] and tipo_ayuda["mostrar_lista"]:
 	sustantivos_ayuda =[]
 	for i in sustantivos_lista:
-		sustantivos_ayuda.append([sg.Text("- " + wrapper.fill(i.upper() +": "+diccionario_palabras["NN"][i]),background_color ="grey20",text_color = "snow")])
+		sustantivos_ayuda.append([sg.Text("- " + wrapper.fill(i.upper() +": "+diccionario_palabras["NN"][i]),background_color =color_secun,text_color = "snow")])
 	verbos_ayuda =[]
 	for i in verbos_lista:
-		verbos_ayuda.append([sg.Text("- " + wrapper.fill(i.upper()+": "+diccionario_palabras["VB"][i]),background_color ="grey20",text_color = "snow")])
+		verbos_ayuda.append([sg.Text("- " + wrapper.fill(i.upper()+": "+diccionario_palabras["VB"][i]),background_color =color_secun,text_color = "snow")])
 	adjetivos_ayuda =[]
 	for i in adjetivos_lista:
-		adjetivos_ayuda.append([sg.Text("- " + wrapper.fill(i.upper()+": "+diccionario_palabras["JJ"][i]),background_color ="grey20",text_color = "snow")])
+		adjetivos_ayuda.append([sg.Text("- " + wrapper.fill(i.upper()+": "+diccionario_palabras["JJ"][i]),background_color =color_secun,text_color = "snow")])
 	
 elif 	not tipo_ayuda["mostrar_definicion"] and not tipo_ayuda["mostrar_lista"]:
-	sustantivos_ayuda = [[sg.Text("Cantidad = "+ str(cant_sustantivos),background_color ="grey20",text_color = "snow")]]
-	verbos_ayuda = [[sg.Text("Cantidad = "+str(cant_verbos),background_color ="grey20",text_color = "snow")]]
-	adjetivos_ayuda = [[sg.Text("Cantidad = "+str(cant_adjetivos),background_color ="grey20",text_color = "snow")]]
+	sustantivos_ayuda = [[sg.Text("Cantidad = "+ str(cant_sustantivos),background_color =color_secun,text_color = "snow")]]
+	verbos_ayuda = [[sg.Text("Cantidad = "+str(cant_verbos),background_color =color_secun,text_color = "snow")]]
+	adjetivos_ayuda = [[sg.Text("Cantidad = "+str(cant_adjetivos),background_color =color_secun,text_color = "snow")]]
 	
-lista_ayuda.append([sg.Frame("Sustantivos:",sustantivos_ayuda, background_color ="grey20",title_color='snow')])
-lista_ayuda.append([sg.Frame("Verbos:",verbos_ayuda, background_color ="grey20",title_color='snow')])
-lista_ayuda.append([sg.Frame("Adjetivos:",adjetivos_ayuda, background_color ="grey20",title_color='snow')])
+#Definiendo el layout	
+lista_ayuda.append([sg.Frame("Sustantivos:",sustantivos_ayuda, background_color =color_secun,title_color='snow')])
+lista_ayuda.append([sg.Frame("Verbos:",verbos_ayuda, background_color =color_secun,title_color='snow')])
+lista_ayuda.append([sg.Frame("Adjetivos:",adjetivos_ayuda, background_color =color_secun,title_color='snow')])
 
-columna_ayuda = [[sg.Frame('Ayuda:',lista_ayuda, title_color = "snow",background_color ="grey20")]]
+columna_ayuda = [[sg.Frame('Ayuda:',lista_ayuda, title_color = "snow",background_color =color_secun)]]
 
-columna_seleccion_tipo = [[sg.Text('Opciones ',background_color ="grey20",text_color='snow',  justification='center', size=(10, 1))],      
+columna_seleccion_tipo = [[sg.Text('Opciones ',background_color =color_secun,text_color='snow',  justification='center', size=(10, 1))],      
                [sg.Radio('Sustantivo', "clase_palabra",key = "sustantivo_radio",size=(10, 15),font = 25,text_color = "grey15" ,background_color = diccionario_colores["color_sustantivo"], default=True )],
-               [sg.T(' ', background_color = color_fondo)], [sg.Radio('Verbo', "clase_palabra",key = "verbo_radio",			size=(10, 15),font = 25,text_color = "grey15" ,background_color = diccionario_colores["color_verbo"] )],
-               [sg.T(' ', background_color = color_fondo)], [sg.Radio('Adjetivo', "clase_palabra",key = "adjetivo_radio", 	size=(10, 15),font = 25,text_color = "grey15" ,background_color = diccionario_colores["color_adjetivo"] )],
-               [sg.T(' ', background_color = color_fondo)], [sg.Button("Comprobar", key = "comprobar_boton", button_color = ("snow","#29AD6B"),size=(14, 3),pad=(5,5) )],
-               [sg.T(' ', background_color = color_fondo)], [sg.T(' ', background_color = color_fondo)], [sg.T(' ', background_color = color_fondo ), sg.OK("Reiniciar",button_color=("#ffffff","#4485C4"),size=(10,2),pad=(5,5))],
-               [sg.T(' ', background_color = color_fondo)], [sg.T(' ', background_color = color_fondo)], [sg.T(' ', background_color = color_fondo ), sg.Exit(button_color=("#ffffff","#C54A4A"),size=(10,2),pad=(5,5))]]
+               [sg.T(' ', background_color = color_secun)], [sg.Radio('Verbo', "clase_palabra",key = "verbo_radio",			size=(10, 15),font = 25,text_color = "grey15" ,background_color = diccionario_colores["color_verbo"] )],
+               [sg.T(' ', background_color = color_secun)], [sg.Radio('Adjetivo', "clase_palabra",key = "adjetivo_radio", 	size=(10, 15),font = 25,text_color = "grey15" ,background_color = diccionario_colores["color_adjetivo"] )],
+               [sg.T(' ', background_color = color_secun)], [sg.Button("Comprobar", key = "comprobar_boton", button_color = ("snow",color_boton),size=(14, 3),pad=(5,5) )],
+               [sg.T(' ', background_color = color_secun)], [sg.T(' ', background_color = color_secun)], [sg.T(' ', background_color = color_secun ), sg.OK("Reiniciar",button_color=("#ffffff",color_boton),size=(10,2),pad=(5,5))],
+               [sg.T(' ', background_color = color_secun)], [sg.T(' ', background_color = color_secun)], [sg.T(' ', background_color = color_secun ), sg.Exit(button_color=("#ffffff",color_boton),size=(10,2),pad=(5,5))]]
 
-layout = [[sg.Column(columna_ayuda),sg.Frame('Sopa De Letras', layout_sopa,background_color = "grey20",title_color = "snow"),sg.Column(columna_seleccion_tipo, background_color='grey20')]]
+layout = [[sg.Column(columna_ayuda),sg.Frame('Sopa De Letras', layout_sopa,background_color = color_secun,title_color = "snow"),sg.Column(columna_seleccion_tipo, background_color=color_secun)]]
 
 window = sg.Window('Mi Sopa de Letras', layout)  
 # Evento Sopa de letras:
+sensor= Sonido()
 while True:
-	event, values = window.Read()  
-	if event is None or event == 'Exit':  
+	event, values = window.Read(timeout=20)
+	
+	# Actualizando el archivo json cada 1 minuto
+	if (time.time() - tiempo) > 60:
+		registro_ambiental(oficina)
+		tiempo= time.time()
+	
+	# Verificando si hubo algun sonido en el microfono
+	sensor.evento_detectado(muestra_datos,[promedio_temp,promedio_hum])
+	
+	#Marcando las palabras con el color correspondiente:
+	if type(event) is tuple: 
+		if(values["sustantivo_radio"]):
+			marcar_palabras(sustantivos_marcados, event, verbos_marcados, adjetivos_marcados, color_marcado_sustantivo, color_sin_marcar)
+	
+		elif(values["verbo_radio"]):
+			marcar_palabras(verbos_marcados, event, sustantivos_marcados, adjetivos_marcados, color_marcado_verbo, color_sin_marcar)
+			
+		elif (values["adjetivo_radio"]):
+			marcar_palabras(adjetivos_marcados, event, verbos_marcados, sustantivos_marcados, color_marcado_adjetivo, color_sin_marcar)
+	#Boton Salir:		
+	if event == 'Exit':  
 		break  
 		
 	#Boton Reiniciar:
@@ -243,15 +311,7 @@ while True:
 															[sg.T(' '*16, background_color = color_fondo),sg.CloseButton ("OK", button_color =("snow","#3698A9"),size=(15,2))]]) 
 		event, values = window_final.Read()
 		
-	else:
-	
-		if(values["sustantivo_radio"]):
-			marcar_palabras(sustantivos_marcados, event, verbos_marcados, adjetivos_marcados, color_marcado_sustantivo, color_sin_marcar)
-	
-		elif(values["verbo_radio"]):
-			marcar_palabras(verbos_marcados, event, sustantivos_marcados, adjetivos_marcados, color_marcado_verbo, color_sin_marcar)
+
+		
 			
-		elif (values["adjetivo_radio"]):
-			marcar_palabras(adjetivos_marcados, event, verbos_marcados, sustantivos_marcados, color_marcado_adjetivo, color_sin_marcar)
-			
-window.Close()
+# ~ window.Close()
