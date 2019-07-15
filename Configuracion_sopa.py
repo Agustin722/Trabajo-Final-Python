@@ -1,18 +1,51 @@
-def Ingreso_de_palabras():
-	# Permite el ingreso de palabras y las busca
-	# en Wikcionario junto con su definicion, si esta entonces guarda
-	# las palabra junto con sus definicion en un diccionario que tiene como
-	# claves el tipo de palabra y como valor otro diccionario
-	# que contiene a las palabras como claves y a sus definiciones
-	# como valor; si la palabra no esta en Wikcionario entonces
-	# crea un archivo txt con el reporte de las palabras que no esten
-	# y se ingresa la palabra con el tipo que te diga pattern y la
-	# definicion ingresada por el usuario
+#Alumnos:
+# Motocanchi Huanca, Elvis David
+# D'Aragona Agustin Alejandro
+
+def cambiar_apariencia_ventana():
+	''' Realiza el cambio del "look and feel" de la ventana
+	con la informacion de las "oficinas" del archivo json
+	y devuelve la lista de oficinas de las que se elige
+	una en la configuracion
+	'''
+	import PySimpleGUI as sg
+	import json
 	
+	arch= open('Json_files/datos-oficinas.json', 'r')
+	dic_temp_hum= json.load(arch)
+	arch.close()
+	total= 0
+	prom= 0
+	for i in dic_temp_hum.keys():
+		total= total + len(dic_temp_hum[i])
+		for j in range(len(dic_temp_hum[i])):
+			prom= prom + dic_temp_hum[i][j]['temperatura']
+	prom= prom / total
+	if prom < 10:
+		sg.ChangeLookAndFeel('GreenTan')
+	elif prom > 30:
+		sg.ChangeLookAndFeel('BluePurple')
+	else:
+		sg.ChangeLookAndFeel('BluePurple')
+	return list(dic_temp_hum.keys())
+
+def Ingreso_de_palabras():
+	''' Permite el ingreso de palabras y las busca
+	en Wikcionario junto con su definicion, si esta entonces guarda
+	las palabra junto con sus definicion en un diccionario que tiene como
+	claves el tipo de palabra y como valor otro diccionario
+	que contiene a las palabras como claves y a sus definiciones
+	como valor; si la palabra no esta en Wikcionario entonces
+	crea un archivo txt con el reporte de las palabras que no esten
+	y se ingresa la palabra con el tipo que te diga pattern y la
+	definicion ingresada por el usuario
+	'''
 	from pattern.web import Wiktionary
 	from pattern.es import parse, split, singularize
 	import PySimpleGUI as sg
+	
 	sg.SetOptions(button_element_size=(4, 2), background_color = "grey20")
+	cambiar_apariencia_ventana()
 	wiki= Wiktionary(language= "es")
 	dic= {'NN':{},'VB':{},'JJ':{}}
 	disenio1 =[[sg.Text('Ingrese un sustantivo, verbo o adjetivo para \nagregar a las palabras de la sopa de letras',background_color = "grey20",text_color = "snow"), sg.InputText(do_not_clear=False, key= 'palabra',background_color = "grey35",text_color = "snow",size=(35,1))],
@@ -104,12 +137,17 @@ def Ingreso_de_palabras():
 	ventana1.Close()
 	return dic
 	
-def configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_palabras,sopa_mayusculas,cant_palabras_default):
-	# Establece la configuracion de la sopa de letras
-	# devolviendo los valores ingresados en estructuras de datos.
-	# En caso de que los colores se repitan se abre una ventana para avisar de esto.
+def configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_palabras,sopa_mayusculas,cant_palabras_default,oficina_asignada):
+	''' Establece la configuracion de la sopa de letras
+	devolviendo los valores ingresados en estructuras de datos.
+	En caso de que los colores se repitan se abre una ventana para avisar de esto.
+	'''
 	import PySimpleGUI as sg
+	
 	sg.SetOptions(button_element_size=(4, 2), background_color = "grey20")
+	# Establece el "look and feel" de la ventana con el promedio de temperatura de las oficinas
+	lista_de_oficinas= cambiar_apariencia_ventana()
+	
 	dic= {'Rojo':'#f94a4f','Naranja':'#f29646','Plateado':'silver','Amarillo':'#f9e54a','Verde':'green','Cyan':'#2dc7e2','Azul':'#478de8','Purpura':'#9453c6','Magenta':'#dc6be0','Rosa':'#f78383'}
 	
 	elegir_color = [[sg.Text('Elija un color para los sustantivos',background_color = "grey20",text_color = "snow"), sg.InputCombo(['Rojo','Naranja','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Rojo', key= 'color_sustantivo',background_color = "grey20",text_color = "snow")],
@@ -127,6 +165,8 @@ def configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_pa
 	
 	elegir_mayus_minus = [[sg.Radio('Mayuscula', "RADIO2",default=True,key= 'mayus',background_color = "grey20",text_color = "snow"), sg.Radio('Minuscula', "RADIO2",key= 'minus',background_color = "grey20",text_color = "snow")]]
 	
+	elegir_oficina = [[sg.Text('Elija una oficina para tomar sus datos',background_color = "grey20",text_color = "snow"), sg.InputCombo(lista_de_oficinas,default_value='oficina1', key= 'office',background_color = "grey20",text_color = "snow")]]
+		
 	configuracion= [[sg.Frame('Colores', elegir_color, background_color = "grey20",title_color = "snow")],
 					[sg.T(" ", background_color = "grey20" )],
 					[sg.Frame('Tipo de ayuda', elegir_ayuda, background_color = "grey20",title_color = "snow")],
@@ -137,7 +177,9 @@ def configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_pa
 					[sg.T(" ", background_color = "grey20" )],
 					[sg.Frame('Tipo de letra de la sopa de letras', elegir_mayus_minus, background_color = "grey20",title_color = "snow")],
 					[sg.T(" ",background_color = "grey20")],
+					[sg.Frame('Oficinas', elegir_oficina, background_color = "grey20",title_color = "snow")],
 					[sg.T(" "*25,background_color = "grey20"), sg.Button("Listo",size =(10,2) , button_color = ("#ffffff","#3698A9"))]]
+					
 	ventana= sg.Window('Configuracion',resizable=True).Layout(configuracion)
 	while True:
 		boton, values= ventana.Read()
@@ -160,3 +202,4 @@ def configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_pa
 	cant_palabras["cant_verbos"]= values['cant_ver']
 	cant_palabras["cant_adjetivos"]= values['cant_adj']
 	sopa_mayusculas.append(values["mayus"])
+	oficina_asignada.append(values["office"])
