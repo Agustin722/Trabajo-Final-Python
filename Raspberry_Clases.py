@@ -1,14 +1,18 @@
+#Alumnos:
+# Motocanchi Huanca, Elvis David
+# D'Aragona Agustin Alejandro
+
 import Adafruit_DHT
 import time
 
 class Temperatura:
-    def __init__(self, pin=17, sensor= Adafruit_DHT.DHT12):
+    def __init__(self, pin=17, sensor= Adafruit_DHT.DHT11):
         self._sensor = sensor
         self._data_pin = pin
 
     def datos_sensor(self):
       humedad, temperatura = Adafruit_DHT.read_retry(self._sensor, self._data_pin)
-      return {'temperatura': temperatura, 'humedad': humedad, 'fecha': time.asctime(time.localtime(time.time()))}
+      return {'temperatura': temperatura, 'humedad': humedad, 'fecha': time.ctime()}
 
 from luma.led_matrix.device import max7219
 from luma.core.interface.serial import spi, noop
@@ -37,6 +41,6 @@ class Sonido:
         GPIO.setwarnings(False)
         GPIO.add_event_detect(self._canal, GPIO.RISING)
         
-    def evento_detectado(self, funcion):
+    def evento_detectado(self, funcion, datos):
         if GPIO.event_detected(self._canal):
-            funcion()
+            funcion(datos)
