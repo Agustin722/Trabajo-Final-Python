@@ -13,6 +13,7 @@ from Raspberry_aplicaciones import registro_ambiental
 from Raspberry_Clases import Sonido
 
 def agregar_clase_palabra_horizontal (palabras_lista, cant_palabras, coord_palabras, layout, cant_columas, cant_filas, lista_letras):
+	'''Llena las listas del layout con botones que contienen las letras de las palabras despues de agregar una cantidad aleatoria al inicio'''
 	for i in range(cant_palabras):
 		fila = random.randint(0,cant_filas-1)
 		while len(layout[fila]) > 0:
@@ -25,6 +26,7 @@ def agregar_clase_palabra_horizontal (palabras_lista, cant_palabras, coord_palab
 			coord_palabras.append((fila,j))
 
 def convertir_vertical (layout, cant_columnas, cant_filas):
+	'''Convierte el layout horizontal a vertical, solo se ejecuta si la casilla "vertical" esta marcada en la configuracion de la sopa'''
 	layout_vertical=[]
 	for i in range(cant_columnas):
 		layout_vertical.append([])
@@ -34,6 +36,7 @@ def convertir_vertical (layout, cant_columnas, cant_filas):
 	return layout_vertical		
 
 def comprobar_palabras (palabras_marcadas, coord_palabras ):
+	'''Verifica si los botones marcados con el color de una clase pertenecen a esa clase y si todos las palabras fueron marcadas'''
 	if all(elem in palabras_marcadas for elem in coord_palabras):
 		if len(coord_palabras) == len(palabras_marcadas):
 			aux = True
@@ -43,7 +46,8 @@ def comprobar_palabras (palabras_marcadas, coord_palabras ):
 		aux =False
 	return aux
 
-def marcar_palabras (palabras_marcadas, coord, palabras_marcadas_2, palabras_marcadas_3, color_marcado, color_sin_marcar): 	
+def marcar_palabras (palabras_marcadas, coord, palabras_marcadas_2, palabras_marcadas_3, color_marcado, color_sin_marcar): 
+	'''Actualiza el color del boton presionado con el color de la clase que esta actualmente seleccionada '''
 	if(palabras_marcadas.count(coord)>0) and coord not in (palabras_marcadas_2 + palabras_marcadas_3):
 		palabras_marcadas.remove(coord)
 		window.Element(coord).Update( button_color =("black",color_sin_marcar))
@@ -51,7 +55,8 @@ def marcar_palabras (palabras_marcadas, coord, palabras_marcadas_2, palabras_mar
 		palabras_marcadas.append(coord)
 		window.Element(coord).Update( button_color =("black",color_marcado))
 
-def correccion_cambiar (palabras_marcadas, coord_palabras):	
+def correccion_cambiar (palabras_marcadas, coord_palabras):
+	'''Despues de presionar el boton "comprobar", cambia el color de los botones dependiendo de si fueron marcados correctamente, fueron marcados incorrectamente o faltaron marcarse'''
 	for elem in palabras_marcadas:
 		if elem in coord_palabras:
 			window.Element(elem).Update( button_color =("#ffffff","#36b575"))
