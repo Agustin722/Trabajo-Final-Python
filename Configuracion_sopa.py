@@ -148,7 +148,7 @@ def configurar_sopa(diccionario_colores, tipo_ayuda,orientacion_vertical,cant_pa
 	# Establece el "look and feel" de la ventana con el promedio de temperatura de las oficinas
 	lista_de_oficinas= cambiar_apariencia_ventana()
 	
-	dic= {'Rojo':'#f94a4f','Naranja':'#f29646','Plateado':'silver','Amarillo':'#f9e54a','Verde':'green','Cyan':'#2dc7e2','Azul':'#478de8','Purpura':'#9453c6','Magenta':'#dc6be0','Rosa':'#f78383'}
+	dic= {'Rojo':'#f54969','Naranja':'#f29741','Plateado':'silver','Amarillo':'#fae050','Verde':'#89eb75','Cyan':'#87ede1','Azul':'#62a2f5','Purpura':'#ae74db','Magenta':'#e36bc5','Rosa':'#fa9ba6'}
 	
 	elegir_color = [[sg.Text('Elija un color para los sustantivos',background_color = "grey20",text_color = "snow"), sg.InputCombo(['Rojo','Naranja','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Rojo', key= 'color_sustantivo',background_color = "grey20",text_color = "snow")],
 					[sg.Text('Elija un color para los verbos',background_color = "grey20",text_color = "snow"), sg.InputCombo(['Rojo','Naranja','Plateado','Amarillo','Verde','Cyan','Azul','Purpura','Magenta','Rosa'],default_value='Amarillo', key= 'color_verbo',background_color = "grey20",text_color = "snow")],
